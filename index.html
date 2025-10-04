@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FastAPI - User & Book API</title>
+  <!-- Bootstrap CDN -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
+  <!-- Font Awesome -->
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <style>
+    body {
+      font-family: "Poppins", sans-serif;
+      background: #f4f7fa;
+      color: #333;
+    }
+    .main-heading {
+      background: linear-gradient(to right, #00c6ff, #0072ff);
+      color: white;
+      text-align: center;
+      padding: 30px 20px;
+      margin-bottom: 40px;
+      border-radius: 0 0 20px 20px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+    .main-heading h1 {
+      font-weight: 700;
+      font-size: 42px;
+    }
+    .card-prob {
+      background-color: white;
+      border: none;
+      border-radius: 15px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      padding: 30px;
+      margin: 0 auto;
+      max-width: 1000px;
+    }
+    .section-title {
+      font-size: 26px;
+      font-weight: 600;
+      color: #0072ff;
+      margin-top: 30px;
+    }
+    .icon {
+      color: #00c6ff;
+      margin-right: 10px;
+    }
+    pre {
+      background: #f0f8ff;
+      padding: 20px;
+      border-radius: 10px;
+      font-size: 16px;
+      overflow-x: auto;
+    }
+    .note-box {
+      background: #fff5e6;
+      border-left: 5px solid #ff9500;
+      padding: 15px 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+    }
+    .footer {
+      text-align: center;
+      margin: 60px 0 20px;
+      color: #aaa;
+    }
+    .nav-buttons {
+      display: flex;
+      justify-content: space-between;
+      max-width: 1000px;
+      margin: 40px auto 20px;
+      padding: 0 20px;
+    }
+    .btn-custom {
+      width: 120px;
+      font-weight: 600;
+      border-radius: 30px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="main-heading">
+  <h1><i class="fas fa-user-cog"></i> FastAPI – User & Book API</h1>
+</div>
+
+<div class="card card-prob">
+
+  <h3 class="section-title"><i class="fas fa-lightbulb icon"></i>Concept</h3>
+  <p>This FastAPI app demonstrates how to use <strong>Pydantic models</strong> to create structured APIs for managing user data (with nested models) and book records.</p>
+
+  <h3 class="section-title"><i class="fas fa-code icon"></i>Python Code</h3>
+  <pre><code>from fastapi import FastAPI, Response
+from pydantic import BaseModel
+
+class User(BaseModel):
+    uname : str
+    email : str
+    password : str
+
+class Profile(BaseModel):
+    college : str
+    address : str
+
+class UserPublic(BaseModel):
+    uname : str
+    email : str
+    profile : Profile
+
+class BookSchema(BaseModel):
+    name : str
+    price : float
+
+app = FastAPI()
+
+@app.get("/")
+def wish():
+    return "Hii User!!"
+
+books = {}
+@app.post("/add_book")
+def add_book(book : BookSchema):
+    if book.name not in books:
+        books[book.name] = book.price
+    return Response("Successfully added the book to the db!!", 200)
+
+@app.get("/get_books", response_model=dict)
+def get_books():
+    return books
+
+users = {
+    'uname' : 'Bhargav',
+    "email" : "Bhargav@gmail.com",
+    "password" : "1234",
+    "profile" : {
+        "college" : "Reva Univer",
+        "address" : "Bengaluru"
+    }
+}
+
+@app.get("/user/", response_model=User)
+def get_user():
+    return users
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app)</code></pre>
+
+  <h3 class="section-title"><i class="fas fa-desktop icon"></i>Sample Outputs</h3>
+  <pre><code>GET /
+→ "Hii User!!"
+
+POST /add_book
+Body: {"name": "Python 101", "price": 349.0}
+→ "Successfully added the book to the db!!"
+
+GET /get_books
+→ {"Python 101": 349.0}
+
+GET /user/
+→ {
+  "uname": "Bhargav",
+  "email": "Bhargav@gmail.com",
+  "password": "1234"
+}</code></pre>
+
+  <h3 class="section-title"><i class="fas fa-info-circle icon"></i>Explanation</h3>
+  <ul>
+    <li><strong>BaseModel:</strong> All data models (User, Profile, Book) inherit from this for validation.</li>
+    <li><strong>add_book:</strong> Accepts a book and adds it to an in-memory dictionary.</li>
+    <li><strong>get_books:</strong> Returns all added books.</li>
+    <li><strong>get_user:</strong> Returns a sample user. Notice that password is exposed (in real apps, you'd avoid this).</li>
+    <li><strong>Nested Models:</strong> The <code>Profile</code> model is nested inside <code>UserPublic</code>.</li>
+  </ul>
+
+  <div class="note-box">
+    <h5><i class="fas fa-lightbulb icon"></i>Note:</h5>
+    <ul>
+      <li>Use <code>UserPublic</code> instead of <code>User</code> in <code>response_model</code> if you want to hide sensitive data like password.</li>
+      <li>This example uses in-memory storage. In production, use a database.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- Navigation Buttons -->
+<div class="nav-buttons">
+  <a href="https://shyam044.github.io/bayes-theorem/" class="btn btn-danger btn-custom">
+    <i class="fas fa-arrow-left"></i> Prev
+  </a>
+  <a href="#" class="btn btn-primary btn-custom">
+    Next <i class="fas fa-arrow-right"></i>
+  </a>
+</div>
+
+<div class="footer">
+  &copy; 2025 FastAPI Learning • Designed with ❤️
+</div>
+
+</body>
+</html>
